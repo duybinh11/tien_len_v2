@@ -32,8 +32,6 @@ public class Server extends Application {
         primaryStage.setScene(new Scene(root, 800, 800));
         primaryStage.show();
         new Thread(() -> {
-            Room room = new Room(0, "duy binh");
-            rooms.add(room);
             try {
                 ServerSocket serverSocket = new ServerSocket(PORT);
                 while (true) {

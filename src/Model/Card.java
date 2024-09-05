@@ -29,6 +29,6 @@ public class Card implements Comparable<Card>, Serializable {
 
     @Override
     public String toString() {
-        return rank + " of " + suit;
+        return rank + "_" + suit;
     }
 }

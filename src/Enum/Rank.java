@@ -1,5 +1,5 @@
 package Enum;
 
 public enum Rank {
-    THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE, TEN, JACK, QUEEN, KING, ACE, TWO;
+    BA, BON, NAM, SAU, BAY, TAM, CHIN, MUOI, BOI, DAM, GIA, XI, HAI;
 }

@@ -3,27 +3,34 @@
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
 
 <!-- fx:controller="Client.ClientRoomController" -->
 
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="593.0" prefWidth="897.0" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Client.ClientRoomController">
+<AnchorPane xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Client.ClientRoomController">
    <children>
       <Label layoutX="288.0" layoutY="474.0" text="Vị trí : " />
       <Label fx:id="txtPosition1" layoutX="332.0" layoutY="474.0" text="null" />
       <Label layoutX="449.0" layoutY="474.0" text="Port : " />
       <Label fx:id="txtPort1" layoutX="496.0" layoutY="474.0" text="null" />
-      <Label layoutX="288.0" layoutY="68.0" text="Vị trí : " />
-      <Label fx:id="txtPosition2" layoutX="788.0" layoutY="122.0" text="null" />
-      <Label layoutX="449.0" layoutY="68.0" text="Port" />
-      <Label fx:id="txtPort2" layoutX="780.0" layoutY="347.0" text="null" />
-      <Label layoutX="104.0" layoutY="113.0" text="Vị trí : " />
-      <Label fx:id="txtPosition4" layoutX="148.0" layoutY="113.0" text="null" />
-      <Label layoutX="97.0" layoutY="338.0" text="Port" />
-      <Label fx:id="txtPort4" layoutX="144.0" layoutY="338.0" text="null" />
-      <Label layoutX="754.0" layoutY="122.0" text="Vị trí : " />
-      <Label fx:id="txtPosition3" layoutX="332.0" layoutY="68.0" text="null" />
-      <Label layoutX="747.0" layoutY="347.0" text="Port" />
-      <Label fx:id="txtPort3" layoutX="480.0" layoutY="68.0" text="null" />
-      <Button fx:id="btnStart" layoutX="677.0" layoutY="470.0" mnemonicParsing="false" onAction="#btnStart" text="Sẵn sàng" />
+      <Label layoutX="288.0" layoutY="68.0" text="Vị trí : " AnchorPane.topAnchor="20.0" />
+      <Label fx:id="txtPosition2" layoutX="1033.0" layoutY="131.0" text="null" AnchorPane.rightAnchor="20.0" />
+      <Label layoutX="449.0" layoutY="68.0" text="Port" AnchorPane.topAnchor="20.0" />
+      <Label fx:id="txtPort2" layoutX="1025.0" layoutY="356.0" text="null" AnchorPane.rightAnchor="20.0" />
+      <Label layoutX="34.0" layoutY="113.0" text="Vị trí : " AnchorPane.leftAnchor="20.0" />
+      <Label fx:id="txtPosition4" layoutX="78.0" layoutY="113.0" text="null" AnchorPane.leftAnchor="60.0" />
+      <Label layoutX="27.0" layoutY="338.0" text="Port" AnchorPane.leftAnchor="20.0" />
+      <Label fx:id="txtPort4" layoutX="74.0" layoutY="338.0" text="null" AnchorPane.leftAnchor="60.0" />
+      <Label layoutX="999.0" layoutY="131.0" text="Vị trí : " AnchorPane.rightAnchor="50.0" />
+      <Label fx:id="txtPosition3" layoutX="332.0" layoutY="68.0" text="null" AnchorPane.topAnchor="20.0" />
+      <Label layoutX="992.0" layoutY="356.0" text="Port" AnchorPane.rightAnchor="50.0" />
+      <Label fx:id="txtPort3" layoutX="480.0" layoutY="68.0" text="null" AnchorPane.topAnchor="20.0" />
+      <Button fx:id="btnStart" layoutX="999.0" layoutY="470.0" mnemonicParsing="false" onAction="#btnStart" text="Sẵn sàng" AnchorPane.rightAnchor="20.0" />
+      <Label fx:id="txtCards" layoutX="37.0" layoutY="531.0" prefHeight="49.0" prefWidth="836.0" />
+      <HBox fx:id="containerCards" layoutX="1.0" layoutY="521.0" prefHeight="300.0" prefWidth="1079.0" AnchorPane.leftAnchor="20.0" AnchorPane.rightAnchor="20.0" />
+      <Button fx:id="btnDanh" layoutX="722.0" layoutY="470.0" mnemonicParsing="false" onAction="#btnDanh" prefHeight="26.0" prefWidth="64.0" text="Đánh" />
+      <AnchorPane fx:id="containerHandInRoom" layoutX="332.0" layoutY="149.0" prefHeight="200.0" prefWidth="200.0" />
+      <Button fx:id="btnSkip" layoutX="643.0" layoutY="471.0" mnemonicParsing="false" onAction="#btnSkip" text="Bỏ lượt" />
+      <Label fx:id="txtNotification" layoutX="318.0" layoutY="424.0" />
    </children>
 </AnchorPane>

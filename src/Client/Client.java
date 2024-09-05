@@ -7,6 +7,7 @@ import java.net.Socket;
 
 import Interface.ClickClientEvent;
 import Model.ActionBroadcast;
+import Model.Card;
 import Model.ClientData;
 import Model.Room;
 import javafx.application.Application;
@@ -17,7 +18,9 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 import java.util.*;
 
-import DTO.RoomDTO;;
+import DTO.RoomDTO;
+import Enum.Rank;
+import Enum.Suit;;
 
 public class Client extends Application implements ClickClientEvent {
     private final int PORT = 12345;
@@ -30,8 +33,9 @@ public class Client extends Application implements ClickClientEvent {
     private Stage primaryStage;
     private Scene homeScene;
     private Socket socket;
-    private ClientData client;
     private RoomDTO roomJoining;
+    private List<Card> cardOfClientOther = new ArrayList<>();
+    private List<Card> cardOfClientThis = new ArrayList<>();
 
     @Override
     public void start(Stage primaryStage) throws Exception {
@@ -41,7 +45,6 @@ public class Client extends Application implements ClickClientEvent {
         Parent root = loader.load();
         controllerHome = loader.getController();
 
-        // Khởi tạo và lưu trữ Scene đầu tiên (homeScene)
         homeScene = new Scene(root, 800, 800);
         controllerHome.setInterfaceClick(this);
 
@@ -59,7 +62,7 @@ public class Client extends Application implements ClickClientEvent {
                     try {
                         @SuppressWarnings("rawtypes")
                         ActionBroadcast actionBroadcast = (ActionBroadcast) readObject.readObject();
-                        System.out.println(actionBroadcast);
+                        System.out.println("action client get : " + actionBroadcast);
 
                         // 1-> lấy danh sách tất cả các phòng
                         if (actionBroadcast.getCode() == 1) {
@@ -96,22 +99,80 @@ public class Client extends Application implements ClickClientEvent {
                             @SuppressWarnings("unchecked")
                             List<ClientData> clientDatas = (List<ClientData>) mapData.get("clientDatas");
 
-                            if (clientDatas.size() > 1) {
-                                Platform.runLater(() -> {
-                                    controllerRoom.visibleBtnStart();
-                                });
-                            }
-
                             ClientData clientCurrent = findClientDataCurrent(clientDatas);
                             System.out.println(roomJoining);
                             Platform.runLater(() -> {
                                 nextView(() -> {
+
                                     updateClientInRoom(clientCurrent, clientDatas);
                                 });
                             });
 
                         }
+                        // +8 -> nhận bài để chơi
+                        else if (actionBroadcast.getCode() == 8) {
+                            List<Card> cards = (List<Card>) actionBroadcast.getData();
+                            Collections.sort(cards, Comparator
+                                    .comparing(Card::getRank)
+                                    .thenComparing(Card::getSuit));
+                            cardOfClientThis.addAll(cards);
+                            System.out.println(cards);
+                            Platform.runLater(() -> {
+                                controllerRoom.displayCardImages(cards);
+                                controllerRoom.inVisibleBtnStart();
+                            });
 
+                        }
+                        // 9 den luot danh
+                        else if (actionBroadcast.getCode() == 9) {
+                            cardOfClientOther.clear();
+                            Platform.runLater(() -> {
+                                controllerRoom.visibleBtnDanh();
+                                controllerRoom.visibleBtnSkip();
+                            });
+                        }
+                        // 11 cho den luot
+                        else if (actionBroadcast.getCode() == 11) {
+                            Platform.runLater(() -> {
+                                controllerRoom.inVisibleBtnDanh();
+                                controllerRoom.inVisibleBtnSkip();
+                            });
+                        }
+                        // +12 -> aciton server gui list card tu clien khac danh
+                        else if (actionBroadcast.getCode() == 12) {
+                            cardOfClientOther.clear();
+                            List<Card> cards = (List<Card>) actionBroadcast.getData();
+                            cardOfClientOther.addAll(cards);
+                            System.out.println("card from server : " + cards);
+                            Platform.runLater(() -> {
+                                controllerRoom.displayCardAll(cards);
+                            });
+                        }
+                        // +13 -> action gui aciton cho client khac tiep theo danh
+                        else if (actionBroadcast.getCode() == 13) {
+                            Platform.runLater(() -> {
+                                controllerRoom.visibleBtnDanh();
+                                controllerRoom.visibleBtnSkip();
+                            });
+                        }
+                        // +15 -> reset card in room
+                        else if (actionBroadcast.getCode() == 15) {
+                            List<Card> cardTemp = new ArrayList<>();
+                            Platform.runLater(() -> {
+                                controllerRoom.displayCardAll(cardTemp);
+                            });
+                        }
+                        // +17 -> reset game va chuan bi game moi
+                        else if (actionBroadcast.getCode() == 17) {
+                            List<Card> cardTemp = new ArrayList<>();
+                            Platform.runLater(() -> {
+                                controllerRoom.inVisibleBtnDanh();
+                                controllerRoom.inVisibleBtnSkip();
+                                controllerRoom.displayCardAll(cardTemp);
+                                controllerRoom.displayCardImages(cardTemp);
+                                controllerRoom.visibleBtnStart();
+                            });
+                        }
                     } catch (ClassNotFoundException e) {
                         e.printStackTrace();
                     }
@@ -217,4 +278,151 @@ public class Client extends Application implements ClickClientEvent {
             e.printStackTrace();
         }
     }
+
+    @Override
+    public void clickDanh(List<Card> cards) {
+        System.out.println("click danh");
+        System.out.println(cardOfClientThis);
+        System.out.println("card danh : " + cards);
+
+        // Tạo một bản sao của danh sách cards
+        List<Card> cardsCopy = new ArrayList<>(cards);
+        System.out.println("card of clientOther :" + cardOfClientOther);
+
+        // checkValidator(cardsCopy);
+        System.out.println("bai danh co hop le : " + checkValid(cardsCopy));
+
+        if (cardOfClientOther.isEmpty() && checkValid(cardsCopy)) {
+            broadcastDanhBai(cardsCopy);
+            cardOfClientThis.removeAll(cards);
+            controllerRoom.resetCartSlect();
+        } else if (checkValid(cardsCopy) && checkCompareCard(cardsCopy)) {
+            broadcastDanhBai(cardsCopy);
+            cardOfClientThis.removeAll(cards);
+            controllerRoom.resetCartSlect();
+        } else {
+            Platform.runLater(() -> {
+                controllerRoom.setMessageNotifilcation("bai danh kh hop le");
+            });
+        }
+        System.out.println("bai hien tai : " + cardOfClientThis);
+
+        if (cardOfClientThis.size() == 0) {
+            ActionBroadcast actionEndGame = new ActionBroadcast<>(16, roomJoining.getId());
+            try {
+                writeObject.writeObject(actionEndGame);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+    }
+
+    private boolean checkValid(List<Card> cards) {
+        if (cards.size() == 1 || isPair(cards) || isTriplet(cards) || isFourOfAKind(cards) || isFourOfAKind(cards)
+                || isStraight(cards)) {
+            return true;
+        }
+        return false;
+    }
+
+    public void broadcastDanhBai(List<Card> cardsCopy) {
+        ActionBroadcast<List<Card>> cardsHand = new ActionBroadcast<List<Card>>(10, cardsCopy, roomJoining.getId());
+        try {
+            writeObject.writeObject(cardsHand);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        Platform.runLater(() -> {
+            controllerRoom.displayCardImages(cardOfClientThis);
+            controllerRoom.displayCardAll(cardsCopy);
+            controllerRoom.setMessageNotifilcation("");
+        });
+    }
+
+    public boolean checkCompareCard(List<Card> cards) {
+        if (cardOfClientOther.size() != cards.size()) {
+            return false;
+        }
+
+        if (cardOfClientOther.size() == 1) {
+            return compareOneCardMoreThan(cards.get(0), cardOfClientOther.get(0));
+        } else if (isPair(cardOfClientOther) && isPair(cards)) {
+            return compareOneCardMoreThan(getCardMax(cards), getCardMax(cardOfClientOther));
+        } else if (isTriplet(cardOfClientOther) && isPair(cards)) {
+            return compareOneCardMoreThan(getCardMax(cards), getCardMax(cardOfClientOther));
+        } else if (isStraight(cardOfClientOther) && isStraight(cards)) {
+            return compareOneCardMoreThan(getCardMax(cards), getCardMax(cardOfClientOther));
+        } else if (isFourOfAKind(cardOfClientOther) && isFourOfAKind(cards)) {
+            return compareOneCardMoreThan(getCardMax(cards), getCardMax(cardOfClientOther));
+        }
+
+        return false;
+    }
+
+    public Card getCardMax(List<Card> cards) {
+        return cards.stream().max((card1, card2) -> {
+            int rankCompare = card1.getRank().ordinal() - card2.getRank().ordinal();
+            if (rankCompare == 0) {
+                return card1.getSuit().ordinal() - card2.getSuit().ordinal();
+            } else {
+                return rankCompare;
+            }
+        }).orElse(null);
+    }
+
+    private boolean compareOneCardMoreThan(Card card1, Card card2) {
+        if (card1.getRank().ordinal() > card2.getRank().ordinal()) {
+            return true;
+        } else if (card1.getRank().ordinal() == card2.getRank().ordinal()) {
+            if (card1.getSuit().ordinal() > card2.getSuit().ordinal()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean isPair(List<Card> cards) {
+        return cards.size() == 2 && cards.get(0).getRank() == cards.get(1).getRank();
+    }
+
+    public boolean isTriplet(List<Card> cards) {
+        return cards.size() == 3 &&
+                cards.get(0).getRank() == cards.get(1).getRank() &&
+                cards.get(1).getRank() == cards.get(2).getRank();
+    }
+
+    public boolean isFourOfAKind(List<Card> cards) {
+        return cards.size() == 4 &&
+                cards.get(0).getRank() == cards.get(1).getRank() &&
+                cards.get(1).getRank() == cards.get(2).getRank() &&
+                cards.get(2).getRank() == cards.get(3).getRank();
+    }
+
+    public boolean isStraight(List<Card> cards) {
+        if (cards.size() < 3) {
+            return false;
+        }
+
+        cards.sort(Comparator.comparing(card -> card.getRank().ordinal()));
+
+        for (int i = 0; i < cards.size() - 1; i++) {
+            if (cards.get(i + 1).getRank().ordinal() != cards.get(i).getRank().ordinal() + 1) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    @Override
+    public void clickSkip() {
+        ActionBroadcast actionSkip = new ActionBroadcast<>(14, roomJoining.getId());
+        try {
+            writeObject.writeObject(actionSkip);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 }

@@ -12,7 +12,9 @@ import DTO.RoomDTO;
 
 import java.io.Serializable;
 import Model.ActionBroadcast;
+import Model.Card;
 import Model.ClientData;
+import Model.Deck;
 import Model.Room;
 
 public class ClientHandle extends Thread implements Serializable {
@@ -37,7 +39,7 @@ public class ClientHandle extends Thread implements Serializable {
         while (true) {
             try {
                 ActionBroadcast actionBroadcast = (ActionBroadcast) readObject.readObject();
-                System.out.println(actionBroadcast);
+                System.out.println("action server get : " + actionBroadcast);
                 // + 2 -> tạo phòng
                 if (actionBroadcast.getCode() == 2) {
                     String name = (String) actionBroadcast.getData();
@@ -75,7 +77,9 @@ public class ClientHandle extends Thread implements Serializable {
                             mapData);
                     broadcastClientAllinRoom(room.getListClient(), actionOAllInClient);
 
-                } else if (actionBroadcast.getCode() == 7) {
+                }
+                // + set isStart cho client do va check xem tat ca cac client da sang ht ch
+                else if (actionBroadcast.getCode() == 7) {
                     int idRoom = actionBroadcast.getIdRoom();
                     Room room = Server.getRoomById(idRoom);
                     room.getListClient().forEach(client -> {
@@ -86,14 +90,132 @@ public class ClientHandle extends Thread implements Serializable {
                     boolean isAllStart = room.getListClient().stream().allMatch(client -> client.isStart);
                     if (isAllStart) {
                         System.out.println("tat ca da san san");
-                        
+                        broadcastSendCartClients(room);
+                        ClientHandle clientHandFirst = findClientHandFist(room);
+                        ActionBroadcast<List<Card>> actonNewTurn = new ActionBroadcast<List<Card>>(9, null);
+                        clientHandFirst.getWriteObject().writeObject(actonNewTurn);
                     } else {
                         System.out.println("not tat ca da san san");
                     }
                 }
+                // + nhận cart từ client
+                else if (actionBroadcast.getCode() == 10) {
+                    int idRoom = actionBroadcast.getIdRoom();
+                    Room room = Server.getRoomById(idRoom);
+                    List<Card> cards = (List<Card>) actionBroadcast.getData();
+                    System.out.println("card server from client : " + cards);
+
+                    List<ClientHandle> clientHandles = room.getListClient();
+
+                    ActionBroadcast<List<Card>> actionCartToServer = new ActionBroadcast<List<Card>>(12, cards);
+                    broadcastClientInRoom(clientHandles, actionCartToServer);
+
+                    ActionBroadcast actionWaitTurn = new ActionBroadcast<>(11);
+                    broadcastThisClient(actionWaitTurn);
+
+                    ActionBroadcast actionNextClient = new ActionBroadcast<>(13);
+
+                    nextTurnHand(clientHandles, actionNextClient);
+                }
+                // + client bo luot
+                else if (actionBroadcast.getCode() == 14) {
+                    int idRoom = actionBroadcast.getIdRoom();
+                    Room room = Server.getRoomById(idRoom);
+
+                    isSkip = true;
+
+                    ActionBroadcast actionWaitTurn = new ActionBroadcast<>(11);
+                    broadcastThisClient(actionWaitTurn);
+
+                    ActionBroadcast actionNextClient = new ActionBroadcast<>(13);
+
+                    nextTurnHand(room.getListClient(), actionNextClient);
+
+                }
+                // + end game
+                else if (actionBroadcast.getCode() == 16) {
+                    int idRoom = actionBroadcast.getIdRoom();
+                    Room room = Server.getRoomById(idRoom);
+
+                    ActionBroadcast actionNewGame = new ActionBroadcast<>(17);
+                    broadcastClientAllinRoom(room.getListClient(), actionNewGame);
+
+                    // set nguoi do danh truoc
+
+                    room.setPostionStartHand(postionRoom);
+                    resetDataClient(room.getListClient());
+
+                }
             } catch (ClassNotFoundException | IOException e) {
                 e.printStackTrace();
             }
+        }
+    }
+
+    private void resetDataClient(List<ClientHandle> clientHandles) {
+        clientHandles.forEach(t -> {
+            t.isSkip = false;
+            t.isStart = false;
+        });
+    }
+
+    private void nextTurnHand(List<ClientHandle> clientHandles,
+            @SuppressWarnings("rawtypes") ActionBroadcast actionNextClient) throws IOException {
+        int postionCurrentHandTurn = postionRoom;
+        while (true) {
+            if (postionCurrentHandTurn + 1 > 4) {
+                postionCurrentHandTurn = 1;
+            } else {
+                postionCurrentHandTurn++;
+            }
+            final int clientPostionNext = postionCurrentHandTurn;
+
+            ClientHandle clientNext = clientHandles.stream().filter(t -> {
+                if (t.getPostionRoom() == clientPostionNext && !t.isSkip) {
+                    return true;
+                }
+                return false;
+            })
+                    .findFirst().orElse(null);
+            if (clientNext != null) {
+                clientNext.getWriteObject().writeObject(actionNextClient);
+                boolean checkNewTurn = checkNewTurn(clientHandles, clientNext);
+                if (checkNewTurn) {
+                    resetTurnHand(clientHandles, clientNext);
+                } else {
+                    System.out.println("not reset turn hand");
+                }
+                System.out.println(checkNewTurn);
+                break;
+            }
+        }
+
+    }
+
+    private void broadcastSendCartClients(Room room) {
+        Deck deck = new Deck();
+        room.getListClient().forEach(client -> {
+            ActionBroadcast<List<Card>> actionGetCarts = new ActionBroadcast<List<Card>>(8,
+                    deck.getCarts());
+            try {
+                client.getWriteObject().writeObject(actionGetCarts);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
+    }
+
+    private ClientHandle findClientHandFist(Room room) {
+        Integer postionStartHand = room.getPostionStartHand();
+        if (postionStartHand == null) {
+            // tim client có postion nhỏ nhât
+            return room.getListClient().stream()
+                    .filter(client -> client.getPostionRoom() != null)
+                    .min((c1, c2) -> Integer.compare(c1.getPostionRoom(), c2.getPostionRoom()))
+                    .orElse(null);
+        } else {
+            return room.getListClient().stream().filter(t -> t.getPostionRoom() == postionStartHand).findFirst()
+                    .orElse(null);
         }
     }
 
@@ -106,7 +228,6 @@ public class ClientHandle extends Thread implements Serializable {
     }
 
     private void broadcastThisClient(@SuppressWarnings("rawtypes") ActionBroadcast actionBroadcast) throws IOException {
-        System.out.println(actionBroadcast);
         writeObject.writeObject(actionBroadcast);
     }
 
@@ -132,6 +253,29 @@ public class ClientHandle extends Thread implements Serializable {
                 e.printStackTrace();
             }
         });
+    }
+
+    private boolean checkNewTurn(List<ClientHandle> clientHandles, ClientHandle clientHandleNext) {
+        System.out.println(clientHandles);
+        return clientHandles.stream()
+                .filter(t -> !t.equals(clientHandleNext))
+                .allMatch(t -> t.isSkip);
+    }
+
+    private void resetTurnHand(List<ClientHandle> clientHandles, ClientHandle clientHandleNext) throws IOException {
+        clientHandles.forEach(t -> {
+            t.isSkip = false;
+            ActionBroadcast actionResetCart = new ActionBroadcast<>(15);
+            try {
+                t.getWriteObject().writeObject(actionResetCart);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
+        ActionBroadcast<List<Card>> actionNewTurn = new ActionBroadcast<List<Card>>(9, null);
+        System.out.println("reset tủrn + action : " + actionNewTurn);
+        clientHandleNext.getWriteObject().writeObject(actionNewTurn);
+
     }
 
     public ClientData getClientData() {
@@ -160,11 +304,6 @@ public class ClientHandle extends Thread implements Serializable {
 
     public void setStart(boolean isStart) {
         this.isStart = isStart;
-    }
-
-    @Override
-    public String toString() {
-        return "ClientHandle [socket=" + socket + "]";
     }
 
     public Socket getSocket() {
@@ -226,6 +365,12 @@ public class ClientHandle extends Thread implements Serializable {
         if (isStart != other.isStart)
             return false;
         return true;
+    }
+
+    @Override
+    public String toString() {
+        return "ClientHandle [socket=" + socket + ", postionRoom=" + postionRoom + ", isSkip=" + isSkip + ", isStart="
+                + isStart + "]";
     }
 
 }

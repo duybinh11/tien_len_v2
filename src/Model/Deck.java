@@ -17,24 +17,34 @@ public class Deck {
             }
         }
 
+        System.out.println(deck);
         // Xáo trộn bộ bài
         Collections.shuffle(deck);
     }
 
     public Card dealCard() {
-        if (deck.isEmpty()) {
-            throw new IllegalStateException("Deck is empty");
+        return deck.remove(deck.size() - 1);
+        // if (deck.isEmpty()) {
+        // throw new IllegalStateException("Deck is empty");
+        // }
+        // if (c) {
+        // c = false;
+        // return deck.remove(index3());
+        // } else {
+        // return deck.remove(deck.size() - 1);
+        // }
+    }
+
+    public List<Card> getCarts() {
+        List<Card> cards = new ArrayList<>();
+        for (int i = 0; i < 13; i++) {
+            cards.add(dealCard());
         }
-        if (c) {
-            c = false;
-            return deck.remove(index3());
-        } else {
-            return deck.remove(deck.size() - 1);
-        }
+        return cards;
     }
 
     public int index3() {
-        return deck.indexOf(new Card(Rank.THREE, Suit.SPADES)); // Ví dụ, tìm Card(3, Spades)
+        return deck.indexOf(new Card(Rank.BA, Suit.BICH));
     }
 
     public List<Card> getDeck() {

@@ -8,6 +8,10 @@ public class ActionBroadcast<T> implements Serializable {
     private T data;
     private int idRoom;
 
+    public ActionBroadcast(int code) {
+        this.code = code;
+    }
+
     public ActionBroadcast(int code, int idRoom) {
         this.code = code;
         this.idRoom = idRoom;

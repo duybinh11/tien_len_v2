@@ -12,7 +12,7 @@ public class Room implements Serializable {
     private int id;
     private String name;
     List<ClientHandle> listClient = new ArrayList<>();
-    private int postionStartHand;
+    private Integer postionStartHand;
     private List<Integer> listPostionAvaiable = new ArrayList<>(Arrays.asList(1, 2, 3, 4));
 
     public Room(int id, String name) {
@@ -64,7 +64,7 @@ public class Room implements Serializable {
         this.listClient = listClient;
     }
 
-    public int getPostionStartHand() {
+    public Integer getPostionStartHand() {
         return postionStartHand;
     }
 
