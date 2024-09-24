@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import Client.ClientController;
 import Model.ActionBroadcast;
 import Model.Room;
 import javafx.application.Application;
@@ -84,7 +83,6 @@ public class Server extends Application {
     private void addClients(ClientHandle clientHandle) {
         Platform.runLater(() -> {
             clients.add(clientHandle);
-            System.out.println(clientHandle);
             controller.updateListClient(clientHandle);
         });
     }

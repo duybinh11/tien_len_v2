@@ -171,6 +171,7 @@ public class Client extends Application implements ClickClientEvent {
                                 controllerRoom.displayCardAll(cardTemp);
                                 controllerRoom.displayCardImages(cardTemp);
                                 controllerRoom.visibleBtnStart();
+                                controllerRoom.setFalseIsStart();
                             });
                         }
                     } catch (ClassNotFoundException e) {

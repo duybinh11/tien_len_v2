@@ -4,12 +4,13 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import DTO.RoomDTO;
-
+import java.util.Date;
 import java.io.Serializable;
 import Model.ActionBroadcast;
 import Model.Card;
@@ -24,13 +25,14 @@ public class ClientHandle extends Thread implements Serializable {
     private Integer postionRoom = null;
     private boolean isSkip = false;
     private boolean isStart = false;
+    private Date time;
 
     public ClientHandle(Socket socket) throws IOException {
         this.socket = socket;
 
         readObject = new ObjectInputStream(socket.getInputStream());
         writeObject = new ObjectOutputStream(socket.getOutputStream());
-
+        this.time = new Date();
         broadcastListRoom();
     }
 
@@ -61,7 +63,6 @@ public class ClientHandle extends Thread implements Serializable {
                 else if (actionBroadcast.getCode() == 5) {
                     int idRoom = actionBroadcast.getIdRoom();
                     Room room = Server.getRoomById(idRoom);
-                    System.out.println(socket);
                     room.addClient(this);
 
                     List<ClientData> clientDataOther = room.getListClient().stream().map(handle -> {
@@ -365,6 +366,10 @@ public class ClientHandle extends Thread implements Serializable {
         if (isStart != other.isStart)
             return false;
         return true;
+    }
+
+    public Date getTime() {
+        return time;
     }
 
     @Override

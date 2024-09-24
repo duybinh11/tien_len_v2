@@ -1,30 +1,86 @@
 package Server;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.sql.Date;
+import java.util.stream.Collectors;
 
 import Model.Room;
+import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
-import javafx.scene.control.TextArea;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
+import javafx.scene.control.cell.PropertyValueFactory;
 
 public class ServerController {
 
-    private List<ClientHandle> listClients = new ArrayList<>();
-    private List<Room> listRoom = new ArrayList<>();
-    @FXML
-    private TextArea txtClient;
+    // Sử dụng ObservableList để theo dõi sự thay đổi của dữ liệu
+    private ObservableList<ClientHandle> listClients = FXCollections.observableArrayList();
+    private ObservableList<Room> listRoom = FXCollections.observableArrayList();
 
     @FXML
-    private TextArea txtRoom;
+    private TableColumn<Room, ?> clCountMember;
+
+    @FXML
+    private TableColumn<Room, Integer> clId;
+
+    @FXML
+    private TableColumn<Room, String> clListPorts;
+
+    @FXML
+    private TableColumn<ClientHandle, Integer> clPort;
+
+    @FXML
+    private TableColumn<ClientHandle, Date> clTime;
+
+    @FXML
+    private TableColumn<ClientHandle, String> clmStatus;
+
+    @FXML
+    private TableView<ClientHandle> tblClient;
+
+    @FXML
+    private TableView<Room> tblRoom;
+    @FXML
+    private TableColumn<Room, String> clName;
+
+    @FXML
+    public void initialize() {
+        tblClient.setItems(listClients);
+        tblRoom.setItems(listRoom);
+
+        clPort.setCellValueFactory(
+                cellData -> new SimpleObjectProperty<>(cellData.getValue().getSocket().getPort()));
+        clmStatus.setCellValueFactory(
+                cellData -> new SimpleStringProperty(cellData.getValue().getPostionRoom() == null ? "chưa" : "rồi"));
+
+        clTime.setCellValueFactory(new PropertyValueFactory<>("time"));
+
+        clId.setCellValueFactory(new PropertyValueFactory<>("id"));
+        clName.setCellValueFactory(new PropertyValueFactory<>("name"));
+
+        clCountMember.setCellValueFactory(
+                cellData -> new SimpleObjectProperty(cellData.getValue().getListClient().size()));
+
+        clListPorts.setCellValueFactory(cellData -> {
+            Room room = cellData.getValue();
+            String ports = room.getListClient().stream()
+                    .map(clientHandle -> String.valueOf(clientHandle.getSocket().getPort()))
+                    .collect(Collectors.joining(", "));
+            return new SimpleStringProperty(ports);
+        });
+    }
 
     public void updateListClient(ClientHandle clientHandle) {
         listClients.add(clientHandle);
-        txtClient.setText(listClients.toString());
+        System.out.println("controller " + listClients);
     }
 
     public void updateListRoom(Room room) {
         listRoom.add(room);
-        txtRoom.setText(listRoom.toString());
+        System.out.println("controller " + listRoom);
     }
 
 }

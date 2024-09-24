@@ -1,14 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.Label?>
-<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
 <?import javafx.scene.layout.AnchorPane?>
 
 <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="454.0" prefWidth="641.0" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Server.ServerController">
    <children>
-      <Label layoutX="56.0" layoutY="42.0" text="client : " />
-      <Label layoutX="62.0" layoutY="213.0" text="room :" />
-      <TextArea fx:id="txtClient" layoutX="154.0" layoutY="31.0" prefHeight="176.0" prefWidth="427.0" />
-      <TextArea fx:id="txtRoom" layoutX="154.0" layoutY="231.0" prefHeight="176.0" prefWidth="427.0" />
+      <Label layoutX="14.0" layoutY="14.0" text="client : " />
+      <Label layoutX="15.0" layoutY="218.0" text="room :" />
+      <TableView fx:id="tblClient" layoutX="60.0" layoutY="14.0" prefHeight="200.0" prefWidth="561.0">
+        <columns>
+          <TableColumn fx:id="clPort" prefWidth="168.79999160766602" text="Port" />
+          <TableColumn fx:id="clTime" prefWidth="192.7999725341797" text="Thời điểm vào game" />
+            <TableColumn fx:id="clmStatus" prefWidth="192.7999725341797" text="Trạng thái ở trong phòng" />
+        </columns>
+      </TableView>
+      <TableView fx:id="tblRoom" layoutX="60.0" layoutY="236.0" prefHeight="200.0" prefWidth="571.0">
+         <columns>
+            <TableColumn fx:id="clId" prefWidth="31.199954986572266" text="id" />
+            <TableColumn fx:id="clName" prefWidth="124.00006103515625" text="name" />
+            <TableColumn fx:id="clCountMember" prefWidth="117.59996032714844" text="Số người chơi" />
+            <TableColumn fx:id="clListPorts" prefWidth="529.5999755859375" text="Ports" />
+         </columns>
+      </TableView>
    </children>
 </AnchorPane>

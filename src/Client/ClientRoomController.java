@@ -29,6 +29,9 @@ public class ClientRoomController {
     private Label txtNotification;
 
     @FXML
+    private Button btnThoat;
+
+    @FXML
     private Button btnDanh;
 
     @FXML
@@ -62,6 +65,8 @@ public class ClientRoomController {
 
     private List<Card> cardsSelect = new ArrayList<>();
 
+    private boolean isStart = false;
+
     private ClickClientEvent clickClientEvent;
 
     public void setClickClientEvent(ClickClientEvent clickClientEvent) {
@@ -71,7 +76,15 @@ public class ClientRoomController {
     @FXML
     void btnStart(ActionEvent event) {
         clickClientEvent.clickStart();
-        btnStart.setText("Đã sẵn sàng");
+        isStart = !isStart;
+        if (isStart) {
+            btnStart.setText("Đã sẵn sàng");
+            inVisibleBtnExit();
+        } else {
+            visibleBtnExit();
+            btnStart.setText("sẵn sàng");
+        }
+
     }
 
     @FXML
@@ -167,6 +180,16 @@ public class ClientRoomController {
     void inVisibleBtnSkip() {
         btnSkip.setVisible(false);
         btnSkip.setManaged(false);
+    }
+
+    void visibleBtnExit() {
+        btnThoat.setVisible(true);
+        btnThoat.setManaged(true);
+    }
+
+    void inVisibleBtnExit() {
+        btnThoat.setVisible(false);
+        btnThoat.setManaged(false);
     }
 
     @FXML
@@ -283,5 +306,16 @@ public class ClientRoomController {
         HBox.setHgrow(stackPane, Priority.ALWAYS);
         containerCards.setAlignment(Pos.CENTER);
         containerCards.getChildren().add(stackPane);
+    }
+
+    @FXML
+    void btnThoat(ActionEvent event) {
+        clickClientEvent.clickExit();
+    }
+
+    public void setFalseIsStart() {
+        isStart = false;
+        visibleBtnExit();
+        btnStart.setText("sẵn sàng");
     }
 }

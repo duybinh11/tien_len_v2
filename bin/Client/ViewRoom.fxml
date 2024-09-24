@@ -32,5 +32,6 @@
       <AnchorPane fx:id="containerHandInRoom" layoutX="332.0" layoutY="149.0" prefHeight="200.0" prefWidth="200.0" />
       <Button fx:id="btnSkip" layoutX="643.0" layoutY="471.0" mnemonicParsing="false" onAction="#btnSkip" text="Bỏ lượt" />
       <Label fx:id="txtNotification" layoutX="318.0" layoutY="424.0" />
+      <Button fx:id="btnThoat" layoutX="17.0" layoutY="16.0" mnemonicParsing="false" onAction="#btnThoat" text="Thoát" />
    </children>
 </AnchorPane>
